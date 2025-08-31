@@ -1,7 +1,7 @@
 # 🛒 Retail Cohort Retention & Churn Analysis
 
 This project performs **Cohort Retention & Churn Analysis** on a retail dataset.  
-It cleans raw data, handles missing/problematic values, and generates customer retention cohorts & cohort churns.
+It cleans raw data, handles missing/problematic values, and generates customer retention & Churn cohorts.
 
 ---
 
@@ -22,9 +22,10 @@ select * from retail limit 10;
 | 536366    | 22633     | HAND WARMER UNION JACK               | 6        | 12/01/2010 08:28 | 1.85      | 17850      | United Kingdom |
 | 536366    | 22632     | HAND WARMER RED POLKA DOT            | 6        | 12/01/2010 08:28 | 1.85      | 17850      | United Kingdom |
 | 536367    | 84879     | ASSORTED COLOUR BIRD ORNAMENT        | 32       | 12/01/2010 08:34 | 1.69      | 13047      | United Kingdom |
+
 select count(*) from retail; -- 5,41,909
 select distinct(country) from retail;
-select min(quantity) from retail; -- -80,995
+select min(quantity) from retail; -- 80,995
 select count(*) from retail
 where Quantity < 0 ; -- 10,624 (Problematic Records)
 select min(unitprice) from retail; -- 11,062
@@ -94,128 +95,108 @@ from CTE2
 group by First_Transaction_Month
 order by First_Transaction_Month;
 
-## 📈 Cohort Retention sample result
-
-Each cohort is based on the **first transaction month** of a customer.  
-The table shows how many customers returned in subsequent months.
-
 | Cohort    | Month_0 | Month_1 | Month_2 | Month_3 | Month_4 | Month_5 | Month_6 | Month_7 | Month_8 | Month_9 | Month_10 | Month_11 | Month_12 |
 |-----------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|----------|----------|----------|
 | 2010-12-01| 885     | 266     | 304     | 310     | 350     | 327     | 323     | 304     | 308     | 320     | 333      | 409      | 384      |
-| 2011-01-01| 417     | 99      | 103     | 107     | 127     | 110     | 104     | 98      | 124     | 132     | 152      | 67       |          |
-| 2011-02-01| 380     | 67      | 85      | 98      | 99      | 88      | 100     | 102     | 102     | 107     | 42       |          |          |
-| 2011-03-01| 452     | 73      | 97      | 102     | 98      | 76      | 103     | 112     | 113     | 64       |          |          |          |
-| 2011-04-01| 300     | 65      | 65      | 56      | 61      | 58      | 61      | 75      | 40       |          |          |          |          |
-| 2011-05-01| 284     | 50      | 47      | 46      | 57      | 63      | 75      | 44       |          |          |          |          |          |
-| 2011-06-01| 242     | 43      | 36      | 55      | 61      | 80      | 31       |          |          |          |          |          |          |
-| 2011-07-01| 188     | 39      | 31      | 46      | 45      | 26       |          |          |          |          |          |          |          |
-| 2011-08-01| 169     | 34      | 43      | 45      | 18       |          |          |          |          |          |          |          |          |
-| 2011-09-01| 299     | 73      | 94      | 26       |          |          |          |          |          |          |          |          |          |
-| 2011-10-01| 358     | 87      | 40       |          |          |          |          |          |          |          |          |          |          |
-| 2011-11-01| 323     | 36       |          |          |          |          |          |          |          |          |          |          |          |
-| 2011-12-01| 41      |          |          |          |          |          |          |          |          |          |          |          |          |
+| 2011-01-01| 417     | 99      | 103     | 107     | 127     | 110     | 104     | 98      | 124     | 132     | 152      | 67       
+| 2011-02-01| 380     | 67      | 85      | 98      | 99      | 88      | 100     | 102     | 102     | 107     | 42       
+| 2011-03-01| 452     | 73      | 97      | 102     | 98      | 76      | 103     | 112     | 113     | 64       
+| 2011-04-01| 300     | 65      | 65      | 56      | 61      | 58      | 61      | 75      | 40       
+| 2011-05-01| 284     | 50      | 47      | 46      | 57      | 63      | 75      | 44       
+| 2011-06-01| 242     | 43      | 36      | 55      | 61      | 80      | 31       
+| 2011-07-01| 188     | 39      | 31      | 46      | 45      | 26                 
+| 2011-08-01| 169     | 34      | 43      | 45      | 18                 
+| 2011-09-01| 299     | 73      | 94      | 26       
+| 2011-10-01| 358     | 87      | 40                
+| 2011-11-01| 323     | 36                 
+| 2011-12-01| 41
 
----
+## Cohort Churn rate Analysis
 
--- Cohort Churn Analysis
-with CTE as 
-( select
-    CustomerID,
-    date(str_to_date(InvoiceDate, '%m/%d/%Y %H:%i')) as Formatted_Date,
-    quantity*unitprice as Sale_Value
-  from retail
-  where InvoiceNo not like 'C%' and
-        Quantity > 0 and
-        unitprice > 0 and
-        customerid is not null and
-        customerid != ''
+With CTE as 
+(Select
+CustomerID,
+Date(str_to_date(InvoiceDate, '%m/%d/%Y %H:%i')) as Formatted_Date,
+quantity*unitprice as Sale_Value
+From Retail
+Where InvoiceNo not like 'C%' and
+	  Quantity > 0 and
+      unitprice > 0 and
+      customerid is not null and
+      customerid != ''
 ),
 CTE1 as
-( select
+(Select
       CustomerID,
       Formatted_Date as Purchase_Date,
-      min(Formatted_Date) over(partition by CustomerID) as First_Transaction_date
-  from CTE
-),
-CTE2 as
-( select
+      min(Formatted_Date) over(Partition by CustomerID) as First_Transaction_date
+      From CTE
+      ),
+ CTE2 as
+ (Select
      CustomerID,
-     concat('Month_', round(datediff(Purchase_Date, First_Transaction_Date)/30,0)) Cohort_Month,
+     Concat('Month_',Round(Datediff(Purchase_Date,First_Transaction_Date)/30,0)) Cohort_Month,
      date_format(purchase_date,'%Y-%m-01') Purchase_Month,
      date_format(First_Transaction_Date,'%Y-%m-01') First_Transaction_Month
-  from CTE1
-),
-CTE3 as
-( select 
+     From CTE1
+     ),
+ CTE3 as
+(Select 
    First_Transaction_Month as Cohort,
-   nullif(count(distinct case when Cohort_Month = 'Month_0' then CustomerID else null end),0) as "Month_0",
-   nullif(count(distinct case when Cohort_Month = 'Month_1' then CustomerID else null end),0) as "Month_1",
-   nullif(count(distinct case when Cohort_Month = 'Month_2' then CustomerID else null end),0) as "Month_2",
-   nullif(count(distinct case when Cohort_Month = 'Month_3' then CustomerID else null end),0) as "Month_3",
-   nullif(count(distinct case when Cohort_Month = 'Month_4' then CustomerID else null end),0) as "Month_4",
-   nullif(count(distinct case when Cohort_Month = 'Month_5' then CustomerID else null end),0) as "Month_5",
-   nullif(count(distinct case when Cohort_Month = 'Month_6' then CustomerID else null end),0) as "Month_6",
-   nullif(count(distinct case when Cohort_Month = 'Month_7' then CustomerID else null end),0) as "Month_7",
-   nullif(count(distinct case when Cohort_Month = 'Month_8' then CustomerID else null end),0) as "Month_8",
-   nullif(count(distinct case when Cohort_Month = 'Month_9' then CustomerID else null end),0) as "Month_9",
-   nullif(count(distinct case when Cohort_Month = 'Month_10' then CustomerID else null end),0) as "Month_10",
-   nullif(count(distinct case when Cohort_Month = 'Month_11' then CustomerID else null end),0) as "Month_11",
-   nullif(count(distinct case when Cohort_Month = 'Month_12' then CustomerID else null end),0) as "Month_12"
-  from CTE2
-  group by First_Transaction_Month
-  order by First_Transaction_Month
-)
-select 
-    Cohort,
-    Month_0,
-    round((Month_0-Month_1)*100/Month_0,2) Month_1,
-    round((Month_0-Month_2)*100/Month_0,2) Month_2,
-    round((Month_0-Month_3)*100/Month_0,2) Month_3,
-    round((Month_0-Month_4)*100/Month_0,2) Month_4,
-    round((Month_0-Month_5)*100/Month_0,2) Month_5,
-    round((Month_0-Month_6)*100/Month_0,2) Month_6,
-    round((Month_0-Month_7)*100/Month_0,2) Month_7,
-    round((Month_0-Month_8)*100/Month_0,2) Month_8,
-    round((Month_0-Month_9)*100/Month_0,2) Month_9,
-    round((Month_0-Month_10)*100/Month_0,2) Month_10,
-    round((Month_0-Month_11)*100/Month_0,2) Month_11,
-    round((Month_0-Month_12)*100/Month_0,2) Month_12
-from CTE3
-order by cohort;
-
-## 📈 Cohort Churn sample result
-
-Each cohort is based on the **first transaction month** of a customer.  
-The table shows the rate of how many customers churned in subsequent months.
+   Nullif( COUNT(DISTINCT CASE WHEN COHORT_MONTH = 'Month_0' THEN CUSTOMERID ELSE null END),0) AS "MONTH_0",
+   nullif( COUNT(DISTINCT CASE WHEN COHORT_MONTH = 'Month_1' THEN CUSTOMERID ELSE null END),0) AS "MONTH_1",
+   nullif( COUNT(DISTINCT CASE WHEN COHORT_MONTH = 'Month_2' THEN CUSTOMERID ELSE null END),0) AS "MONTH_2",
+   nullif( COUNT(DISTINCT CASE WHEN COHORT_MONTH = 'Month_3' THEN CUSTOMERID ELSE null END),0) AS "MONTH_3",
+   nullif( COUNT(DISTINCT CASE WHEN COHORT_MONTH = 'Month_4' THEN CUSTOMERID ELSE NULL END),0) AS "MONTH_4",
+   nullif( COUNT(DISTINCT CASE WHEN COHORT_MONTH = 'Month_5' THEN CUSTOMERID ELSE NULL END),0) AS "MONTH_5",
+   nullif( COUNT(DISTINCT CASE WHEN COHORT_MONTH = 'Month_6' THEN CUSTOMERID ELSE NULL END),0) AS "MONTH_6",
+   nullif( COUNT(DISTINCT CASE WHEN COHORT_MONTH = 'Month_7' THEN CUSTOMERID ELSE NULL END),0) AS "MONTH_7",
+   nullif( COUNT(DISTINCT CASE WHEN COHORT_MONTH = 'Month_8' THEN CUSTOMERID ELSE NULL END),0) AS "MONTH_8",
+   nullif( COUNT(DISTINCT CASE WHEN COHORT_MONTH = 'Month_9' THEN CUSTOMERID ELSE NULL END),0) AS "MONTH_9",
+   nullif( COUNT(DISTINCT CASE WHEN COHORT_MONTH = 'Month_10' THEN CUSTOMERID ELSE NULL END),0) AS "MONTH_10",
+   nullif( COUNT(DISTINCT CASE WHEN COHORT_MONTH = 'Month_11' THEN CUSTOMERID ELSE NULL END),0) AS "MONTH_11",
+   nullif( COUNT(DISTINCT CASE WHEN COHORT_MONTH = 'Month_12' THEN CUSTOMERID ELSE NULL END),0) AS "MONTH_12"
+   From CTE2
+   group by First_Transaction_Month
+   order by First_Transaction_Month
+   )
+   Select 
+       Cohort,
+       Month_0,
+       round((Month_0-Month_1)*100/Month_0,2) Month_1,
+       round((Month_0-Month_2)*100/Month_0,2) Month_2,
+       round((Month_0-Month_3)*100/Month_0,2) Month_3,
+       round((Month_0-Month_4)*100/Month_0,2) Month_4,
+       round((Month_0-Month_5)*100/Month_0,2) Month_5,
+       round((Month_0-Month_6)*100/Month_0,2) Month_6,
+       round((Month_0-Month_7)*100/Month_0,2) Month_7,
+       round((Month_0-Month_8)*100/Month_0,2) Month_8,
+       round((Month_0-Month_9)*100/Month_0,2) Month_9,
+       round((Month_0-Month_10)*100/Month_0,2) Month_10,
+       round((Month_0-Month_11)*100/Month_0,2) Month_11,
+       round((Month_0-Month_12)*100/Month_0,2) Month_12
+       From CTE3
+       order by cohort;
+## Retention Table with NULLs
 
 | Cohort    | Month_0 | Month_1 | Month_2 | Month_3 | Month_4 | Month_5 | Month_6 | Month_7 | Month_8 | Month_9 | Month_10 | Month_11 | Month_12 |
 |-----------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|----------|----------|----------|
-| 2010-12-01| 885     | 69.94   | 65.65   | 64.97   | 60.45   | 63.05   | 63.50   | 65.65   | 64.20   | 63.62   | 62.37    | 53.79    | 56.61    |
-| 2011-01-01| 417     | 76.26   | 75.30   | 74.34   | 69.54   | 73.62   | 75.06   | 76.50   | 70.26   | 68.35   | 63.55    | 83.93    |          |
-| 2011-02-01| 380     | 82.37   | 77.63   | 74.21   | 73.95   | 76.84   | 73.68   | 73.16   | 73.16   | 71.84   | 88.95    |          |          |
-| 2011-03-01| 452     | 83.85   | 78.54   | 77.43   | 78.32   | 83.19   | 77.21   | 75.22   | 75.00   | 85.84    |          |          |          |
-| 2011-04-01| 300     | 78.33   | 78.33   | 81.33   | 79.67   | 80.67   | 79.67   | 75.00   | 86.67    |          |          |          |          |
-| 2011-05-01| 284     | 82.39   | 83.45   | 83.80   | 79.93   | 77.82   | 73.59   | 84.51    |          |          |          |          |          |
-| 2011-06-01| 242     | 82.23   | 85.12   | 77.27   | 74.79   | 66.94   | 87.19    |          |          |          |          |          |          |
-| 2011-07-01| 188     | 79.26   | 83.51   | 75.53   | 76.06   | 86.17    |          |          |          |          |          |          |          |
-| 2011-08-01| 169     | 79.88   | 74.56   | 73.37   | 89.35    |          |          |          |          |          |          |          |          |
-| 2011-09-01| 299     | 75.59   | 68.56   | 91.30    |          |          |          |          |          |          |          |          |          |
-| 2011-10-01| 358     | 75.70   | 88.83    |          |          |          |          |          |          |          |          |          |          |
-| 2011-11-01| 323     | 88.85    |          |          |          |          |          |          |          |          |          |          |          |
-| 2011-12-01| 41      |          |          |          |          |          |          |          |          |          |          |          |          |
-
----
-      
+| 2010-12-01| 885     | 69.94   | 65.65   | 64.97   | 60.45   | 63.05   | 63.50   | 65.65   | 64.20   | 63.62   | 62.37    | 53.79    | 56.61    
+| 2011-01-01| 417     | 76.26   | 75.30   | 74.34   | 69.54   | 73.62   | 75.06   | 76.50   | 70.26   | 68.35   | 63.55    | 83.93   
+| 2011-02-01| 380     | 82.37   | 77.63   | 74.21   | 73.95   | 76.84   | 73.68   | 73.16   | 73.16   | 71.84   | 88.95    
+| 2011-03-01| 452     | 83.85   | 78.54   | 77.43   | 78.32   | 83.19   | 77.21   | 75.22   | 75.00   | 85.84   
+| 2011-04-01| 300     | 78.33   | 78.33   | 81.33   | 79.67   | 80.67   | 79.67   | 75.00   | 86.67   
+| 2011-05-01| 284     | 82.39   | 83.45   | 83.80   | 79.93   | 77.82   | 73.59   | 84.51      
+| 2011-06-01| 242     | 82.23   | 85.12   | 77.27   | 74.79   | 66.94   | 87.19   
+| 2011-07-01| 188     | 79.26   | 83.51   | 75.53   | 76.06   | 86.17   
+| 2011-08-01| 169     | 79.88   | 74.56   | 73.37   | 89.35   
+| 2011-09-01| 299     | 75.59   | 68.56   | 91.30  
+| 2011-10-01| 358     | 75.70   | 88.83   
+| 2011-11-01| 323     | 88.85   
+| 2011-12-01| 41      
+     
 📌 *Numbers above are an **illustrative example** of what the final cohort output might look like after running the SQL script.*  
 The actual values will depend on the dataset you run it on.
-
-## 📸 Excel Visualization
-
-![excel](./cohort.png)
-
-```
-
-
-
-
-
+ ```
+ ## 📸 Excel Visualization
+![Dashboard Screenshot](cohort.png)
