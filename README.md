@@ -210,6 +210,7 @@ The table shows the rate of how many customers churned in subsequent months.
 The actual values will depend on the dataset you run it on.
 
 ## 📸 Excel Visualization
-<image-card alt="Dashboard Screenshot" src="cohort_table.png" ></image-card>
+![excel](cohort.png)
 
-*Note: If the image does not display, ensure the file `cohort_table.png` is correctly uploaded to the repository root and refresh the page.*
+
+
