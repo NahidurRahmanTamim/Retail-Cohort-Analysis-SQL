@@ -204,7 +204,7 @@ The table shows the rate of how many customers churned in subsequent months.
 | 2011-11-01| 323     | 88.85    |          |          |          |          |          |          |          |          |          |          |          |
 | 2011-12-01| 41      |          |          |          |          |          |          |          |          |          |          |          |          |
 
----     
+---
       
 📌 *Numbers above are an **illustrative example** of what the final cohort output might look like after running the SQL script.*  
 The actual values will depend on the dataset you run it on.
